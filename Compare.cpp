@@ -10,7 +10,7 @@
 #define MSG_ERRORS "Errors Detected. For more information use an output file."
 #define MSG_NERRORS "No errors detected."
 #define MSK_NOK "NOK"
-#define TOL 1e-7
+#define TOL 0.1
 
 using namespace std;
 
@@ -127,7 +127,7 @@ int main(int argc, char* const argv[]){
         while(lstream1>>CplxBuff1 && lstream2>>CplxBuff2){ // intento leer un Complex de cada archivo
             if(lstream1.good() && lstream2.good()){
                 
-                if((abs(CplxBuff1.GetRe()-CplxBuff2.GetRe())>TOL) || (abs(CplxBuff1.GetIm()-CplxBuff2.GetIm())>TOL)){
+                if(abs(CplxBuff1.GetRe()-CplxBuff2.GetRe())>(TOL*max(CplxBuff1.GetRe(),CplxBuff2.GetRe())) || abs(CplxBuff1.GetIm()-CplxBuff2.GetIm())>(TOL*max(CplxBuff1.GetIm(),CplxBuff2.GetIm()))){
                     ofs<<i<<" "<<j<<" "<<MSK_NOK<< endl;
                     errors=true;
                 }

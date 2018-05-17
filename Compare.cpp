@@ -10,7 +10,7 @@
 #define MSG_ERRORS "Errors Detected. For more information use an output file."
 #define MSG_NERRORS "No errors detected."
 #define MSK_NOK "NOK"
-#define TOL 0.1
+#define TOL 1e-6
 
 using namespace std;
 
@@ -21,11 +21,11 @@ static void opt_help(string const &);
 
 
 static option_t options[] = {
-    {1, "f1", "file1", NULL, opt_input1, OPT_MANDATORY},
-    {1, "f2", "file2", NULL, opt_input2, OPT_MANDATORY},
-    {1, "o", "output", NULL, opt_output, OPT_DEFAULT},
-    {0 ,"h", "help" , NULL, opt_help, OPT_DEFAULT},
-    {0,0,0,0,0,0},
+    {1, "f1", "file1"   , NULL, opt_input1 , OPT_MANDATORY  },
+    {1, "f2", "file2"   , NULL, opt_input2 , OPT_MANDATORY  },
+    {1, "o" , "output"  , NULL, opt_output , OPT_DEFAULT    },
+    {0, "h" , "help"    , NULL, opt_help   , OPT_DEFAULT    },
+    {0, 0   ,   0       ,   0 ,      0     ,    0           },
 };
 
 static istream *is1 = 0;
@@ -76,27 +76,21 @@ opt_input2(string const &arg)
     if (!is2->good()) {
         cerr << ERR_NOPEN << arg << "." << endl;
         exit(1);
-        exit(1);
     }
 }
 
 
-static void
-opt_output(string const &arg)
-{
+static void opt_output(string const &arg){
     // Si el nombre del archivos es "-", usaremos la salida
     // estandar. De lo contrario, abrimos un archivo en modo
     // de escritura.
-    //
     if (arg == "-") {
         oss = &cout;
     } else {
         ofs.open(arg.c_str(), ios::out);
         oss = &ofs;
     }
-
     // Verificamos que el stream este OK.
-    //
     if (!oss->good()) {
         cerr << ERR_NOPEN << arg << "." << endl;
         exit(1);
@@ -112,11 +106,10 @@ opt_help(string const &arg){
 
 int main(int argc, char* const argv[]){
     cmdline cmdl(options);
-    cmdl.parse(argc,argv);
-    Complex CplxBuff1;
-    Complex CplxBuff2;
-    string line1;
-    string line2;
+    cmdl.parse( argc, argv );
+    Complex CplxBuff1, CplxBuff2;
+    string line1=0, line2=0;
+    double  diffRe=0, diffIm=0; 
     bool errors = false;
     int i=0,j=0;
     while(!ifs1.eof()&&!ifs2.eof()){ //mientras no haya llegado al end of file.
@@ -126,14 +119,15 @@ int main(int argc, char* const argv[]){
         stringstream  lstream2(line2);
         while(lstream1>>CplxBuff1 && lstream2>>CplxBuff2){ // intento leer un Complex de cada archivo
             if(lstream1.good() && lstream2.good()){
-                
-                if(abs(CplxBuff1.GetRe()-CplxBuff2.GetRe())>(TOL*max(CplxBuff1.GetRe(),CplxBuff2.GetRe())) || abs(CplxBuff1.GetIm()-CplxBuff2.GetIm())>(TOL*max(CplxBuff1.GetIm(),CplxBuff2.GetIm()))){
+                diffRe=abs(CplxBuff1.GetRe()-CplxBuff2.GetRe());
+                diffIm=abs(CplxBuff1.GetIm()-CplxBuff2.GetIm());
+                if(diffRe>TOL|| diffIm>TOL){
                     ofs<<i<<" "<<j<<" "<<MSK_NOK<< endl;
                     errors=true;
                 }
                 j++;
             }
-        }
+        }    
         j=0;
         i++;
     }

@@ -16,9 +16,7 @@ class Complex
 {
 		double Re_,Im_;
 	public:
-		Complex();
-		Complex(double const real,double const imagine);
-		Complex(double const real);
+		Complex(double const real=0,double const imag=0);
 		Complex(Complex const & z);
 		~Complex();
 		double GetRe() const;
@@ -39,8 +37,8 @@ class Complex
 		double Abs() const;
 		friend istream & operator >> (istream &, Complex &);
 		friend ostream & operator << (ostream &, Complex &);
-		void SetRe(double);
-		void SetIm(double);
+		void SetRe(double d=0);
+		void SetIm(double d=0);
 
 	
 };

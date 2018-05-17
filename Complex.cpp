@@ -10,21 +10,11 @@
 
 using namespace std;
 
-//CONSTRUCTORES
-
-Complex::Complex(){
-	Re_=0;
-	Im_=0;
-}
+///////Constructors///////
 
 Complex::Complex(double const real,double const imag){
 	Re_=real;
 	Im_=imag;
-}
-
-Complex::Complex(double const real){
-	Re_=real;
-	Im_=0;
 }
 
 Complex::Complex(const Complex & c){
@@ -38,7 +28,7 @@ Complex const & Complex::operator=(Complex const & c){
 	return *this;
 }
 
-//
+////////Getters////////
 
 double Complex::GetRe()const{
 	return Re_;
@@ -59,7 +49,7 @@ void Complex::SetIm(double a){
 Complex::~Complex(){}
 
 
-//OPERADORES
+/////////Operators/////////
 
 Complex const operator+(Complex const & a,Complex const & b){
 	Complex d(a.GetRe() + b.GetRe(),a.GetIm() + b.GetIm());
@@ -74,14 +64,18 @@ Complex const operator-(Complex const & a,Complex const & b){
 Complex const operator*(Complex const & a,Complex const & b){
 	return Complex(a.GetRe()*b.GetRe()-a.GetIm()*b.GetIm(),a.GetRe()*b.GetIm()+a.GetIm()*b.GetRe());
 }
+
 Complex const operator/(Complex const & a, double b){
 	return Complex (a.GetRe()/b,a.GetIm()/b);
 }
+
 Complex const operator/(Complex const & a,Complex const & b){
-	if(b.GetRe()==0 && b.GetIm()==0){
-		return a;
-	}
-	else	return ((a * b.Conjugate2()) / (b.Abs_Square()));
+    if( !(b.GetIm()) && !(b.GetRe()) ){
+//    	throw logic_error(ERROR_MSG_DIV_BY_ZERO);
+    	return a;
+    }
+	else
+        return ((a * b.Conjugate2()) / (b.Abs_Square()));
 }
 
 Complex const & Complex::operator*=(Complex const &c){
@@ -122,6 +116,7 @@ double Complex::Abs()const{
 }
 
 istream & operator >> (istream & is, Complex &c){
+    //Verificar excepciones de stream
 	bool good=false;
 	bool bad=false;
 	double re=0,im=0;
@@ -152,6 +147,7 @@ istream & operator >> (istream & is, Complex &c){
 }
 
 ostream & operator << (ostream & os, Complex &c){
+    //Verificar excepciones de stream
 	os<<'('<<c.GetRe()<<','<<c.GetIm()<<')';
 	return os;
 }

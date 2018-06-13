@@ -88,9 +88,10 @@ int main(int argc, char* const argv[]){
     Complex RegBuff, InBuff, diff;
     string regline, inputline;
     bool lerrors=false, gerrors = false;
-    int i=0,j=0;
+    int i=0;
     while(!rifs.eof()&&!ifs.eof()){ //mientras no haya llegado al end of file.
         lerrors=false;
+        int j=0;
         getline(rifs, regline);
         getline(ifs, inputline);
         stringstream  regstream(regline);
@@ -98,8 +99,6 @@ int main(int argc, char* const argv[]){
         while(regstream>>RegBuff && instream>>InBuff){ // intento leer un Complex de cada archivo
             if(regstream.good() && instream.good()){
                 diff=RegBuff-InBuff;
-                cerr<<diff<<endl;
-                cerr<<diff.Abs()<<endl;
                 if(diff.Abs()>= tol){
                     lerrors=true;
                     gerrors=true;
@@ -109,12 +108,15 @@ int main(int argc, char* const argv[]){
         }
         //once the entire line is tested
         //should test if line was not an empty line
-        cout<<MSG_HEADER<<i+1<<": ";
-        if(lerrors) cout<<MSG_NOK;
-        else cout<< MSG_OK; 
-        cout<<j<<" "<< tol << endl; 
-        j=0;
+        if(j>0){
+            cout<<MSG_HEADER<<i+1<<": ";
+            if(lerrors) cout<<MSG_NOK;
+            else cout<< MSG_OK; 
+            cout<<j<<" "<< tol << endl; 
+        }
         i++;
+        
+        
     }
     rifs.close();
     ifs.close();

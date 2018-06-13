@@ -12,7 +12,7 @@ using namespace std;
 
 ///////Constructors///////
 
-Complex::Complex(double const real,double const imag){
+Complex::Complex(double real,double imag){
 	Re_=real;
 	Im_=imag;
 }
@@ -78,32 +78,32 @@ Complex const operator/(Complex const & a,Complex const & b){
         return ((a * b.Conjugate2()) / (b.Abs_Square()));
 }
 
-Complex const & Complex::operator*=(Complex const &c){
+Complex & Complex::operator*=(Complex const &c){
 	(*this) = (*this)*c;
 	return *this;
 }
 
-Complex const & Complex::operator/=(Complex const &c){
+Complex & Complex::operator/=(Complex const &c){
 	(*this) = (*this)/c;
 	return *this;
 }
 
-Complex const & Complex::operator+=(Complex const &c){
+Complex & Complex::operator+=(Complex const &c){
 	(*this) = (*this)+c;
 	return *this;
 }
 
-Complex const & Complex::operator-=(Complex const &c){
+Complex & Complex::operator-=(Complex const &c){
 	(*this) = (*this)-c;
 	return *this;
 }
 
-Complex const & Complex:: Conjugate (){
+Complex & Complex:: Conjugate (){
 	Im_*= -1;
 	return *this;
 }
 
-Complex const Complex:: Conjugate2() const{
+Complex Complex:: Conjugate2() const{
 		return Complex(Re_,-Im_);
 }
 

@@ -1,97 +1,75 @@
 #include <iostream>
-#include "cmdline.cc"
 #include <fstream>
 #include <iomanip>
 #include <sstream>
 #include <cstdlib>
+#include "cmdline.cc"
 #include "Complex.cpp"
 #define ERR_NOPEN "Cannot open "
 #define HELP "Program must be invoked: ./<Archive name> -f1 <file1> -f2 <file2> -f3 <output file>"
-#define MSG_ERRORS "Errors Detected. For more information use an output file."
-#define MSG_NERRORS "No errors detected."
-#define MSK_NOK "NOK"
-#define TOL 1e-6
+#define MSG_HEADER "test "
+#define MSG_NOK "NOK "
+#define MSG_OK "OK "
+#define TOL_DEFAULT 1e-6
 
 using namespace std;
 
-static void opt_input1(string const &);
-static void opt_input2(string const &);
-static void opt_output(string const &);
+static void opt_regression(string const &);
+static void opt_input(string const &);
 static void opt_help(string const &);
 
 
 static option_t options[] = {
-    {1, "f1", "file1"   , NULL, opt_input1 , OPT_MANDATORY  },
-    {1, "f2", "file2"   , NULL, opt_input2 , OPT_MANDATORY  },
-    {1, "o" , "output"  , NULL, opt_output , OPT_DEFAULT    },
+    {1, "r", "regression"   , "-", opt_regression , OPT_MANDATORY  },
+    {1, "i", "input"   , "-", opt_input , OPT_DEFAULT  },
     {0, "h" , "help"    , NULL, opt_help   , OPT_DEFAULT    },
     {0, 0   ,   0       ,   0 ,      0     ,    0           },
 };
 
-static istream *is1 = 0;
-static istream *is2 = 0;
-static ostream *oss = 0;
-static ifstream ifs1;
-static ifstream ifs2;
-static ofstream ofs;
-
+static istream *ris = NULL;
+static istream *is = NULL;
+static ifstream rifs;
+static ifstream ifs;
+static double tol = TOL_DEFAULT;
 static void
-opt_input1(string const &arg)
+opt_regression(string const &arg)
 {
     // Si el nombre del archivos es "-", usaremos la entrada
     // estandar. De lo contrario, abrimos un archivo en modo
     // de lectura.
     //
     if (arg == "-") {
-        is1 = &cin;
+        ris = &cin;
     } else {
-        ifs1.open(arg.c_str(), ios::in);
-        is1 = &ifs1;
+        rifs.open(arg.c_str(), ios::in);
+        ris = &rifs;
     }
 
     // Verificamos que el stream este OK.
     //
-    if (!is1->good()) {
+    if (!ris->good()) {
         cerr << ERR_NOPEN << arg << "." << endl;
         exit(1);
     }
 }
 
 static void
-opt_input2(string const &arg)
+opt_input(string const &arg)
 {
     // Si el nombre del archivos es "-", usaremos la entrada
     // estandar. De lo contrario, abrimos un archivo en modo
     // de lectura.
     //
     if (arg == "-") {
-        is2 = &cin;
+        is = &cin;
     } else {
-        ifs2.open(arg.c_str(), ios::in);
-        is2 = &ifs2;
+        ifs.open(arg.c_str(), ios::in);
+        is = &ifs;
     }
 
     // Verificamos que el stream este OK.
     //
-    if (!is2->good()) {
-        cerr << ERR_NOPEN << arg << "." << endl;
-        exit(1);
-    }
-}
-
-
-static void opt_output(string const &arg){
-    // Si el nombre del archivos es "-", usaremos la salida
-    // estandar. De lo contrario, abrimos un archivo en modo
-    // de escritura.
-    if (arg == "-") {
-        oss = &cout;
-    } else {
-        ofs.open(arg.c_str(), ios::out);
-        oss = &ofs;
-    }
-    // Verificamos que el stream este OK.
-    if (!oss->good()) {
+    if (!is->good()) {
         cerr << ERR_NOPEN << arg << "." << endl;
         exit(1);
     }
@@ -107,34 +85,39 @@ opt_help(string const &arg){
 int main(int argc, char* const argv[]){
     cmdline cmdl(options);
     cmdl.parse( argc, argv );
-    Complex CplxBuff1, CplxBuff2;
-    string line1=0, line2=0;
-    double  diffRe=0, diffIm=0; 
-    bool errors = false;
+    Complex RegBuff, InBuff, diff;
+    string regline, inputline;
+    bool lerrors=false, gerrors = false;
     int i=0,j=0;
-    while(!ifs1.eof()&&!ifs2.eof()){ //mientras no haya llegado al end of file.
-        getline(ifs1, line1);
-        getline(ifs2, line2);
-        stringstream  lstream1(line1);
-        stringstream  lstream2(line2);
-        while(lstream1>>CplxBuff1 && lstream2>>CplxBuff2){ // intento leer un Complex de cada archivo
-            if(lstream1.good() && lstream2.good()){
-                diffRe=abs(CplxBuff1.GetRe()-CplxBuff2.GetRe());
-                diffIm=abs(CplxBuff1.GetIm()-CplxBuff2.GetIm());
-                if(diffRe>TOL|| diffIm>TOL){
-                    ofs<<i<<" "<<j<<" "<<MSK_NOK<< endl;
-                    errors=true;
+    while(!rifs.eof()&&!ifs.eof()){ //mientras no haya llegado al end of file.
+        lerrors=false;
+        getline(rifs, regline);
+        getline(ifs, inputline);
+        stringstream  regstream(regline);
+        stringstream  instream(inputline);
+        while(regstream>>RegBuff && instream>>InBuff){ // intento leer un Complex de cada archivo
+            if(regstream.good() && instream.good()){
+                diff=RegBuff-InBuff;
+                cerr<<diff<<endl;
+                cerr<<diff.Abs()<<endl;
+                if(diff.Abs()>= tol){
+                    lerrors=true;
+                    gerrors=true;
                 }
                 j++;
             }
-        }    
+        }
+        //once the entire line is tested
+        //should test if line was not an empty line
+        cout<<MSG_HEADER<<i+1<<": ";
+        if(lerrors) cout<<MSG_NOK;
+        else cout<< MSG_OK; 
+        cout<<j<<" "<< tol << endl; 
         j=0;
         i++;
     }
-    if (!errors) cout<<MSG_NERRORS<<endl;
-    else cout<<MSG_ERRORS<<endl;
-    ofs.close();
-    ifs1.close();
-    ifs2.close();
-    return 0;
+    rifs.close();
+    ifs.close();
+    if (gerrors) return 1;
+    else return 0;
 }

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <cmath>
 #include <string>
+#include <sstream>
 
 #define BAD_INPUT "ERROR: BAD-INPUT - Format error detected. Shorter line as output"
 
@@ -13,7 +14,16 @@
 using namespace std;
 
 template <class T>
+class Array;
 
+template <class T>
+istream& operator >>(istream &, const Array <T>&);
+
+template <class T>
+ostream& operator <<(ostream &, const Array <T>);
+
+
+template <class T>
 class  Array
 {
     size_t size;
@@ -29,17 +39,18 @@ class  Array
     T & operator[](size_t const pos) const;
     T & operator[](size_t const pos);
     Array<T> & operator=( const Array<T> &);
-    Array<T> & operator*( const T &);
+    Array<T>   operator*( const T &) const;
     Array<T> & operator*=(const T &);
-    template <class T1> friend istream& operator  >> (istream &, const Array <T1>&);
-    template <class T1> friend ostream& operator  << (ostream &, const Array <T1>);
-    Array<T> & operator / (const double);
+    friend istream& operator>> <T>(istream &, const Array <T>&);
+    friend ostream& operator<< <T>(ostream &, const Array <T>);
+    Array<T> operator/ (const T &) const;
+    Array<T>& operator/=(const T &);
     //Functions
-    Array<T>& Even() const;
-    Array<T>& Odd() const;
+    Array<T> Even() const;
+    Array<T> Odd() const;
     size_t GetSize() const;
     void Reset();
-    void Resize(size_t);
+    void Resize(size_t const);
 };
 
 //CONSTRUCTORS
@@ -94,15 +105,14 @@ template <class T> Array<T> & Array<T>::operator=( const Array<T> &c ){
     return *this;
 }
 
-template <class T> Array<T> & Array<T>::operator*(const T & d)
+template <class T> Array<T> Array<T>::operator*(const T & d) const
 {
-    Array<T>* result;
-    result=new Array<T>(*this);
+    Array<T> result(*this);
 
     for(size_t i=0; i<size; i++)
-        (*result)[i]*=d;
+        result[i]*=d;
 
-    return *result;
+    return Array<T>(result);
 }
 
 template <class T> Array<T> & Array<T>::operator*=(const T & d)
@@ -115,13 +125,12 @@ template <class T> Array<T> & Array<T>::operator*=(const T & d)
 
 
 
-template <class T1> std::istream& operator  >> (std::istream& is, Array <T1>& X)
+template <class T> std::istream& operator  >> (std::istream& is, Array <T>& X)
 {
-    //Tirar excepcion en caso de error
     string line;
     getline(is, line);
     stringstream lstream(line);
-    T1 buffer;
+    T buffer;
     size_t i=0;
 
     while(lstream>>buffer){
@@ -135,7 +144,7 @@ template <class T1> std::istream& operator  >> (std::istream& is, Array <T1>& X)
     return is;
 }
 
-template <class T1> std::ostream& operator  << (std::ostream& os, Array <T1> X)
+template <class T> std::ostream& operator  << (std::ostream& os, Array <T> X)
 {
     size_t len=X.GetSize();
     for(size_t i=0; i<len; i++)
@@ -144,34 +153,39 @@ template <class T1> std::ostream& operator  << (std::ostream& os, Array <T1> X)
     return os;
 }
 
-template <class T> Array<T> & Array<T>::operator / (const double b)
+template <class T> Array<T>  Array<T>::operator/ (const T& b) const
 {
-    T* aux=new T[size];
+    Array<T> aux(*this);
+
     for(size_t i=0;i<size;i++)
-    {
-       aux[i]=(*this)[i]/b;
-    }
-    delete []data;
-    data=aux;
+       aux[i]=data[i]/b;
+
+    return Array<T>(aux);
+}
+
+template <class T> Array<T>& Array<T>::operator/=(const T& b)
+{
+    for(size_t i=0; i<size; i++)
+        data[i]/=b;
+
     return *this;
 }
 
 
 //FUNCTIONS
 
-template <class T> Array<T>& Array<T>::Even() const
+template <class T> Array<T> Array<T>::Even() const
 {
     size_t len=(size/2);
 
-    Array<T> *result;
-    result=new Array<T>(len);
-    for(size_t i=0; i<len; i++)
-        (*result)[i]=(*this)[0+2*i];
+    Array<T> result(len);
 
-    return *result;
+    for(size_t i=0; i<len; i++)
+       result[i]=(*this)[2*i];
+    return Array<T>(result);
 }
 
-template <class T> Array<T>& Array<T>::Odd() const
+template <class T> Array<T> Array<T>::Odd() const
 {
     size_t len;
     if(!(size%2))
@@ -179,31 +193,32 @@ template <class T> Array<T>& Array<T>::Odd() const
     else
         len=(size/2)+1;
 
-    Array<T> *result;
-    result=new Array<T>(len);
+    Array<T> result(len);
+
     for(size_t i=0; i<len; i++)
-        (*result)[i]=(*this)[1+2*i];
+        result[i]=(*this)[1+2*i];
 
-    return *result;
-
+    return Array<T>(result);
 }
 
 template <class T> size_t Array <T>::GetSize()const {
     return size;
 }
 
-template <class T> void Array <T>::Resize(size_t n){
+template <class T> void Array <T>::Resize(size_t const n){
+    if(size==n)
+        return;
+
     T* aux;
-    if(size!=n){
-        aux=new T[n];
-        size=n;
-        for(size_t i=0;i<size;i++){
-            aux[i]=(*this)[i];
-        }
-        delete []data;
-        data=aux;
-    }
-    return;
+    aux=new T[n];
+    size_t limit=( (n<size)? n : size);
+
+    for(size_t i=0; i<limit; i++)
+            aux[i]=data[i];
+
+    delete []data;
+    data=aux;
+    size=n;
 }
 
 template <class T> void Array <T>::Reset(){
@@ -212,3 +227,5 @@ template <class T> void Array <T>::Reset(){
     data=new T[DEFAULT_SIZE];
 };
 #endif
+
+

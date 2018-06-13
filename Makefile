@@ -26,8 +26,8 @@ Complex.o: Complex.cpp Complex.h
 Fourier.o: Fourier.cpp Fourier.h Array.h Complex.h
 	$(CC) -o Fourier.o -c Fourier.cpp
 
-Cmdline.o: Cmdline.cpp Cmdline.h
-	$(CC) -o Cmdline.o -c Cmdline.cpp
+Cmdline.o: Cmdline.cc Cmdline.h
+	$(CC) -o Cmdline.o -c Cmdline.cc
 
 
 clean:

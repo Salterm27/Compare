@@ -1,7 +1,9 @@
 # Compare
 
+## Description
 C application that compares two files and returns an output with the differences.
 
+## API
 Must be invoked as:
 
 /path/Compare -f1 file2compare1 -f2 file2compare2 -o eval
